@@ -917,8 +917,19 @@ MonoBehaviour:
   useArmSpanForAttackRange: 1
   armReachBuffer: 0.5
   runSpeed: 3
-  wanderWalkSpeed: 1
-  wanderDistance: 5
+  staticWandering:
+    wanderWalkSpeed: 1
+    wanderPath:
+    - direction: 0
+      distance: 5
+      angle: 45
+    - direction: 1
+      distance: 3
+      angle: 45
+    - direction: 0
+      distance: 3
+      angle: 45
+    stepDelay: 1
   idleAnimation: {fileID: 7400000, guid: 23ee7f6864c52b243bfb4f2da09bc287, type: 2}
   walkWanderingAnimation: {fileID: 7400000, guid: a0389bcc17a6335409898ddb374c1570, type: 2}
   walkChasingAnimation: {fileID: 7400000, guid: 37e6af8636979e04086967e3bd667606, type: 2}
@@ -928,6 +939,9 @@ MonoBehaviour:
   attackAnimation: {fileID: 7400000, guid: de559bbb071ebfd40ab5af80881e75e8, type: 2}
   useWalkForChasing: 0
   useFrontFallDeath: 1
+  wanderAnimationSpeed: 1.5
+  chaseWalkAnimationSpeed: 1.5
+  chaseRunAnimationSpeed: 1
   initialState: 1
 --- !u!195 &8749867767678778574
 NavMeshAgent:

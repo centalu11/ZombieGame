@@ -310,6 +310,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2039150547495833928, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
+      propertyPath: chaseRunAnimationSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2039150547495833928, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
       propertyPath: staticWandering.wanderPath.Array.data[1].distance
       value: 5
       objectReference: {fileID: 0}
@@ -378,6 +382,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2039150547495833928, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
+      propertyPath: chaseRunAnimationSpeed
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2437828361836556949, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
       propertyPath: m_Name
       value: NormalZombie1 (1)
@@ -556,6 +564,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2039150547495833928, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
+      propertyPath: wanderAnimationSpeed
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2039150547495833928, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
+      propertyPath: chaseRunAnimationSpeed
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2039150547495833928, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
       propertyPath: staticWandering.wanderPath.Array.data[0].distance
       value: 8
@@ -782,6 +798,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2039150547495833928, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
+      propertyPath: chaseRunAnimationSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2039150547495833928, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
       propertyPath: wanderPath.Array.data[0].direction
       value: 0
       objectReference: {fileID: 0}
@@ -846,6 +866,52 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2015a12e1ba9b4b43b570f7aa9070324, type: 3}
+--- !u!1 &1940842520
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1940842522}
+  - component: {fileID: 1940842523}
+  m_Layer: 0
+  m_Name: SceneLoader
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1940842522
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940842520}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -159.45122, y: 0, z: 18.02044}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1940842523
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940842520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45b9688ec0b33b345879a880fb7bd04f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerScene: {fileID: 102900000, guid: 0bdeb003bfd59804fabea1daf02768e7, type: 3}
+  networkScene: {fileID: 102900000, guid: 1d9d9ffd3290d2647b8ff89bae42dfac, type: 3}
 --- !u!1 &1952948134
 GameObject:
   m_ObjectHideFlags: 0
@@ -5416,3 +5482,4 @@ SceneRoots:
   - {fileID: 80361271}
   - {fileID: 514871245}
   - {fileID: 73027120}
+  - {fileID: 1940842522}

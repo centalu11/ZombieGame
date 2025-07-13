@@ -108,6 +108,16 @@ namespace ZombieGame.NPC.Enemy.Zombie
         [Tooltip("Use front fall death animation (unchecked = back fall)")]
         public bool useFrontFallDeath = true;
         
+        [Header("Animation Speed Settings")]
+        [Tooltip("Speed multiplier for wandering walk animation")]
+        public float wanderAnimationSpeed = 1.5f;
+        
+        [Tooltip("Speed multiplier for chasing walk animation")]
+        public float chaseWalkAnimationSpeed = 1.5f;
+        
+        [Tooltip("Speed multiplier for chasing run animation")]
+        public float chaseRunAnimationSpeed = 1f;
+        
         [Header("Initial State")]
         [Tooltip("Choose the initial state when zombie spawns")]
         public InitialState initialState = InitialState.Idle;
@@ -305,6 +315,8 @@ namespace ZombieGame.NPC.Enemy.Zombie
                 {
                     _animator.Play(idleAnimation.name);
                 }
+                // Reset animation speed to normal for idle
+                _animator.speed = 1f;
             }
         }
         
@@ -357,6 +369,8 @@ namespace ZombieGame.NPC.Enemy.Zombie
                     {
                         _animator.Play(walkWanderingAnimation.name);
                     }
+                    // Set animation speed to match movement
+                    _animator.speed = wanderAnimationSpeed;
                 }
                 else if (isWaitingBetweenSteps && idleAnimation != null)
                 {
@@ -365,6 +379,8 @@ namespace ZombieGame.NPC.Enemy.Zombie
                     {
                         _animator.Play(idleAnimation.name);
                     }
+                    // Reset animation speed to normal for idle
+                    _animator.speed = 1f;
                 }
             }
         }
@@ -435,6 +451,8 @@ namespace ZombieGame.NPC.Enemy.Zombie
                     {
                         _animator.Play(chasingAnimation.name);
                     }
+                    // Set animation speed to match movement
+                    _animator.speed = useWalkForChasing ? chaseWalkAnimationSpeed : chaseRunAnimationSpeed;
                 }
             }
         }
@@ -472,6 +490,8 @@ namespace ZombieGame.NPC.Enemy.Zombie
                 {
                     _animator.Play(attackAnimation.name);
                 }
+                // Reset animation speed to normal for attack
+                _animator.speed = 1f;
             }
         }
         
@@ -524,6 +544,8 @@ namespace ZombieGame.NPC.Enemy.Zombie
                     {
                         _animator.Play(deathAnimation.name);
                     }
+                    // Reset animation speed to normal for death
+                    _animator.speed = 1f;
                 }
             }
         }
