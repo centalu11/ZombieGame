@@ -392,7 +392,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
         [ContextMenu("Setup All Zombies in Scene")]
         public void SetupAllZombiesInScene()
         {
-            GameObject[] allObjects = FindObjectsOfType<GameObject>();
+            GameObject[] allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
             int setupCount = 0;
             
             foreach (GameObject obj in allObjects)

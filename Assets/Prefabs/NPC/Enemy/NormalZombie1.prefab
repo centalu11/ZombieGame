@@ -862,7 +862,7 @@ Animator:
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 8f7380da49034cd488ddff94b1ac35d1, type: 3}
   m_Controller: {fileID: 9100000, guid: 49dc716b5686fb947bae1596089f15cf, type: 2}
-  m_CullingMode: 0
+  m_CullingMode: 2
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
@@ -889,7 +889,7 @@ MonoBehaviour:
   drag: 1
   angularDrag: 5
   colliderHeight: 1.8
-  colliderRadius: 0.3
+  colliderRadius: 0.5
   colliderCenter: {x: 0, y: 0.9, z: 0}
   enableDynamicCollider: 1
   autoDetectBones: 1
@@ -916,9 +916,7 @@ MonoBehaviour:
   minAttackDistance: 1
   useArmSpanForAttackRange: 1
   armReachBuffer: 0.5
-  runSpeed: 3
   staticWandering:
-    wanderWalkSpeed: 1
     wanderPath:
     - direction: 0
       distance: 5
@@ -929,19 +927,93 @@ MonoBehaviour:
     - direction: 0
       distance: 3
       angle: 45
-    stepDelay: 1
-  idleAnimation: {fileID: 7400000, guid: 23ee7f6864c52b243bfb4f2da09bc287, type: 2}
-  walkWanderingAnimation: {fileID: 7400000, guid: a0389bcc17a6335409898ddb374c1570, type: 2}
-  walkChasingAnimation: {fileID: 7400000, guid: 37e6af8636979e04086967e3bd667606, type: 2}
-  runChasingAnimation: {fileID: 7400000, guid: fc9a62f9b1354f342bacfbbe077c503e, type: 2}
-  deathBackFallAnimation: {fileID: 7400000, guid: 812aae90a9297f249908057eed4c0879, type: 2}
-  deathFrontFallAnimation: {fileID: 7400000, guid: e44a892308e84194f9f7a5817a6285d7, type: 2}
-  attackAnimation: {fileID: 7400000, guid: de559bbb071ebfd40ab5af80881e75e8, type: 2}
+    stepDelay: 3
+  idleAnimation:
+    stateName: Z_Idle
+    animationClips:
+    - clip: {fileID: 7400000, guid: 03c4685cb71fd214b996ba63b4a6a76a, type: 3}
+      animationSpeed: 1
+      movementSpeed: 0
+    - clip: {fileID: 7400000, guid: f72e7b64dcca12a4e88562420f4c5e8f, type: 3}
+      animationSpeed: 1
+      movementSpeed: 0
+    - clip: {fileID: 7400000, guid: 23ee7f6864c52b243bfb4f2da09bc287, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    randomized: 0
+    selectedClipIndex: 0
+  wanderWalkAnimation:
+    stateName: Z_Wander_Walk
+    animationClips:
+    - clip: {fileID: 7400000, guid: 8cfd048f912e3bc449653aae509e3299, type: 3}
+      animationSpeed: 1.7
+      movementSpeed: 0.23
+    - clip: {fileID: 7400000, guid: a0389bcc17a6335409898ddb374c1570, type: 2}
+      animationSpeed: 1.5
+      movementSpeed: 0.35
+    randomized: 0
+    selectedClipIndex: 0
+  chaseWalkAnimation:
+    stateName: Z_Chase_Walk
+    animationClips:
+    - clip: {fileID: 7400000, guid: e0facad7c797ccb4aa3fe71eb7be843d, type: 3}
+      animationSpeed: 1.5
+      movementSpeed: 0.35
+    - clip: {fileID: 7400000, guid: 37e6af8636979e04086967e3bd667606, type: 2}
+      animationSpeed: 1.5
+      movementSpeed: 0.35
+    randomized: 0
+    selectedClipIndex: 0
+  chaseRunAnimation:
+    stateName: Z_Chase_Run
+    animationClips:
+    - clip: {fileID: 7400000, guid: 0af6d8854256bcb46b44c8daa2b5a31c, type: 3}
+      animationSpeed: 1
+      movementSpeed: 3
+    - clip: {fileID: 7400000, guid: fc9a62f9b1354f342bacfbbe077c503e, type: 2}
+      animationSpeed: 1
+      movementSpeed: 3
+    randomized: 1
+    selectedClipIndex: 0
+  attackAnimation:
+    stateName: Z_Attack
+    animationClips:
+    - clip: {fileID: 7400000, guid: 8bc7156cd87801544811dd0db86c5b15, type: 3}
+      animationSpeed: 1
+      movementSpeed: 0
+    - clip: {fileID: 7400000, guid: bc2476b646cbc224dad190c7aa10c499, type: 3}
+      animationSpeed: 1
+      movementSpeed: 0
+    - clip: {fileID: 7400000, guid: de559bbb071ebfd40ab5af80881e75e8, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    randomized: 1
+    selectedClipIndex: 2
+  deathBackAnimation:
+    stateName: Z_Death_Back
+    animationClips:
+    - clip: {fileID: 7400000, guid: 812aae90a9297f249908057eed4c0879, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    randomized: 0
+    selectedClipIndex: 0
+  deathFrontAnimation:
+    stateName: Z_Death_Front
+    animationClips:
+    - clip: {fileID: 7400000, guid: e44a892308e84194f9f7a5817a6285d7, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    randomized: 0
+    selectedClipIndex: 0
   useWalkForChasing: 0
   useFrontFallDeath: 1
-  wanderAnimationSpeed: 1.5
-  chaseWalkAnimationSpeed: 1.5
-  chaseRunAnimationSpeed: 1
+  enableHeadTracking: 1
+  maxHeadRotationHorizontal: 120
+  maxHeadRotationVertical: 80
+  headRotationSpeed: 3
+  enableArmPointing: 1
+  maxArmRotationAngle: 150
+  armRotationSpeed: 2
   initialState: 1
 --- !u!195 &8749867767678778574
 NavMeshAgent:

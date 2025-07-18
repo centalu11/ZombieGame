@@ -9,9 +9,6 @@ namespace ZombieGame.NPC.Enemy.Zombie
     public class StaticWandering
     {
         [Header("Static Wandering Configuration")]
-        [Tooltip("Walking speed during static wandering")]
-        public float wanderWalkSpeed = 1f;
-        
         [Tooltip("Enhanced wandering path - array of directions and distances")]
         public WanderStep[] wanderPath = new WanderStep[]
         {
@@ -25,7 +22,6 @@ namespace ZombieGame.NPC.Enemy.Zombie
         
         // Private variables for wandering state
         private Transform _zombieTransform;
-        private float _stoppingThreshold = 0.5f;
         
         // Enhanced Wandering Variables
         private int _currentWaypointIndex = 0;
@@ -74,7 +70,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
         /// Update wandering logic - call this in Update()
         /// Returns true if wandering is active and moving
         /// </summary>
-        public bool UpdateWandering()
+        public bool UpdateWandering(float speed, bool disableMovement = false)
         {
             if (_zombieTransform == null || wanderPath == null || wanderPath.Length == 0) 
                 return false;
@@ -108,14 +104,17 @@ namespace ZombieGame.NPC.Enemy.Zombie
             directionToTarget.y = 0; // Keep horizontal
             
             // Calculate how far we can move this frame
-            float moveDistance = wanderWalkSpeed * Time.deltaTime;
+            float moveDistance = speed * Time.deltaTime;
             float distanceToTarget = Vector3.Distance(_zombieTransform.position, targetWaypoint);
             
             // Check if we can reach the waypoint this frame
             if (moveDistance >= distanceToTarget)
             {
-                // Move directly to the exact waypoint position
-                _zombieTransform.position = targetWaypoint;
+                // Move directly to the exact waypoint position (only if movement is enabled)
+                if (!disableMovement)
+                {
+                    _zombieTransform.position = targetWaypoint;
+                }
                 
                 // Move to next waypoint
                 _currentWaypointIndex++;
@@ -133,14 +132,17 @@ namespace ZombieGame.NPC.Enemy.Zombie
             }
             else
             {
-                // Look at target while moving
-                if (directionToTarget != Vector3.zero)
+                // Look at target while moving (only if movement is enabled)
+                if (!disableMovement && directionToTarget != Vector3.zero)
                 {
                     _zombieTransform.rotation = Quaternion.LookRotation(directionToTarget);
                 }
                 
-                // Move towards target waypoint
-                _zombieTransform.position += directionToTarget * moveDistance;
+                // Move towards target waypoint (only if movement is enabled)
+                if (!disableMovement)
+                {
+                    _zombieTransform.position += directionToTarget * moveDistance;
+                }
                 return true; // Currently moving
             }
         }

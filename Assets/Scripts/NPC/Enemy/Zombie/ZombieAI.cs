@@ -1,4 +1,6 @@
 using UnityEngine;
+using ZombieGame.Core;
+using ZombieGame.NPC.Enemy.Zombie.Structs;
 
 namespace ZombieGame.NPC.Enemy.Zombie
 {
@@ -73,33 +75,32 @@ namespace ZombieGame.NPC.Enemy.Zombie
         [Tooltip("Buffer distance added to arm reach (accounts for body size and combat space)")]
         public float armReachBuffer = 0.5f;
         
-        [Tooltip("Running speed when chasing")]
-        public float runSpeed = 3.5f;
+        // Movement speeds are now handled per-clip in AnimationStateData
         
         [Header("Static Wandering Settings")]
         public StaticWandering staticWandering = new StaticWandering();
         
-        [Header("Animation Assignments")]
-        [Tooltip("Animation to play when zombie is idle")]
-        public AnimationClip idleAnimation;
+        [Header("Animation States")]
+        [Tooltip("Idle animation state and clip")]
+        public AnimationStateData idleAnimation = new AnimationStateData("Z_Idle", new AnimationClip[0]);
         
-        [Tooltip("Animation to play when zombie is wandering")]
-        public AnimationClip walkWanderingAnimation;
+        [Tooltip("Wandering walk animation state and clip")]
+        public AnimationStateData wanderWalkAnimation = new AnimationStateData("Z_Wander_Walk", new AnimationClip[0]);
         
-        [Tooltip("Animation to play when zombie is walking while chasing")]
-        public AnimationClip walkChasingAnimation;
+        [Tooltip("Chasing walk animation state and clip")]
+        public AnimationStateData chaseWalkAnimation = new AnimationStateData("Z_Chase_Walk", new AnimationClip[0]);
         
-        [Tooltip("Animation to play when zombie is running while chasing")]
-        public AnimationClip runChasingAnimation;
+        [Tooltip("Chasing run animation state and clip")]
+        public AnimationStateData chaseRunAnimation = new AnimationStateData("Z_Chase_Run", new AnimationClip[0]);
         
-        [Tooltip("Animation to play when zombie dies - back fall")]
-        public AnimationClip deathBackFallAnimation;
+        [Tooltip("Attack animation state and clip")]
+        public AnimationStateData attackAnimation = new AnimationStateData("Z_Attack", new AnimationClip[0]);
         
-        [Tooltip("Animation to play when zombie dies - front fall")]
-        public AnimationClip deathFrontFallAnimation;
+        [Tooltip("Death back fall animation state and clip")]
+        public AnimationStateData deathBackAnimation = new AnimationStateData("Z_Death_Back", new AnimationClip[0]);
         
-        [Tooltip("Animation to play when zombie attacks")]
-        public AnimationClip attackAnimation;
+        [Tooltip("Death front fall animation state and clip")]
+        public AnimationStateData deathFrontAnimation = new AnimationStateData("Z_Death_Front", new AnimationClip[0]);
         
         [Header("Chase Settings")]
         [Tooltip("Use walking animation when chasing (unchecked = running)")]
@@ -109,14 +110,34 @@ namespace ZombieGame.NPC.Enemy.Zombie
         public bool useFrontFallDeath = true;
         
         [Header("Animation Speed Settings")]
-        [Tooltip("Speed multiplier for wandering walk animation")]
-        public float wanderAnimationSpeed = 1.5f;
         
-        [Tooltip("Speed multiplier for chasing walk animation")]
-        public float chaseWalkAnimationSpeed = 1.5f;
+        // Animation speeds are now handled per-clip in AnimationStateData
         
-        [Tooltip("Speed multiplier for chasing run animation")]
-        public float chaseRunAnimationSpeed = 1f;
+        [Header("Head Tracking Settings")]
+        [Tooltip("Enable head tracking to look at player when detected")]
+        public bool enableHeadTracking = true;
+        
+        [Tooltip("Maximum head rotation angle horizontally (zombie-like flexibility)")]
+        [Range(0f, 180f)]
+        public float maxHeadRotationHorizontal = 120f;
+        
+        [Tooltip("Maximum head rotation angle vertically (zombie-like flexibility)")]
+        [Range(0f, 90f)]
+        public float maxHeadRotationVertical = 80f;
+        
+        [Tooltip("Head rotation speed")]
+        public float headRotationSpeed = 3f;
+        
+        [Header("Arm Pointing Settings")]
+        [Tooltip("Enable arm pointing towards player when detected")]
+        public bool enableArmPointing = true;
+        
+        [Tooltip("Maximum arm rotation angle (zombie-like flexibility)")]
+        [Range(0f, 180f)]
+        public float maxArmRotationAngle = 150f;
+        
+        [Tooltip("Arm rotation speed")]
+        public float armRotationSpeed = 2f;
         
         [Header("Initial State")]
         [Tooltip("Choose the initial state when zombie spawns")]
@@ -143,6 +164,23 @@ namespace ZombieGame.NPC.Enemy.Zombie
         private Transform _player;
         private Animator _animator;
         private bool _isDead = false;
+        
+        // Detection state
+        private bool _isPlayerDetected = false;
+        
+        /// <summary>
+        /// Public property to check if player is currently detected
+        /// </summary>
+        public bool IsPlayerDetected => _isPlayerDetected;
+        
+        // Head and arm tracking variables
+        private Transform _headBone;
+        private Transform _leftArmBone;
+        private Transform _rightArmBone;
+        private Quaternion _originalHeadRotation;
+        private Quaternion _originalLeftArmRotation;
+        private Quaternion _originalRightArmRotation;
+        private bool _trackingInitialized = false;
         
         // Wandering Variables (legacy - kept for backward compatibility)
         private Vector3 _wanderTarget;
@@ -181,19 +219,192 @@ namespace ZombieGame.NPC.Enemy.Zombie
         private void InitializeComponents()
         {
             _animator = GetComponent<Animator>();
-            
-            // Find player
-            var playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
+            if (_animator == null)
             {
-                _player = playerObj.transform;
+                Debug.LogError("[ZombieAI] No Animator component found!");
+                return;
             }
+
+            // Pre-select clips to set indices in the original structs
+            idleAnimation.SetAnimationClip();
+            wanderWalkAnimation.SetAnimationClip();
+            chaseWalkAnimation.SetAnimationClip();
+            chaseRunAnimation.SetAnimationClip();
+            attackAnimation.SetAnimationClip();
+            deathBackAnimation.SetAnimationClip();
+            deathFrontAnimation.SetAnimationClip();
+            
+            // Apply dynamic animation overrides
+            DynamicAnimatorController.ApplyOverrides(
+                _animator,
+                _animator.runtimeAnimatorController,
+                idleAnimation,
+                wanderWalkAnimation,
+                chaseWalkAnimation,
+                chaseRunAnimation,
+                attackAnimation,
+                deathBackAnimation,
+                deathFrontAnimation
+            );
+            
+            // Initialize head and arm tracking
+            InitializeTracking();
             
             // Calculate arm span for attack range
             if (useArmSpanForAttackRange)
             {
                 CalculateArmSpanAttackRange();
             }
+        }
+        
+        /// <summary>
+        /// Initialize head and arm tracking system
+        /// </summary>
+        private void InitializeTracking()
+        {
+            if (!enableHeadTracking && !enableArmPointing) return;
+            
+            if (_animator == null) return;
+            
+            // Auto-detect head bone
+            if (enableHeadTracking)
+            {
+                _headBone = _animator.GetBoneTransform(HumanBodyBones.Head);
+                if (_headBone == null)
+                {
+                    _headBone = FindChildByName(transform, "Head");
+                }
+                if (_headBone == null)
+                {
+                    _headBone = FindChildByName(transform, "head");
+                }
+                if (_headBone == null)
+                {
+                    _headBone = FindChildByName(transform, "Neck");
+                }
+                if (_headBone == null)
+                {
+                    _headBone = FindChildByName(transform, "neck");
+                }
+                
+                if (_headBone != null)
+                {
+                    _originalHeadRotation = _headBone.localRotation;
+                }
+                else
+                {
+                    Debug.LogWarning($"[ZombieAI] {gameObject.name}: Head bone not found! Head tracking disabled.");
+                    enableHeadTracking = false;
+                }
+            }
+            
+            // Auto-detect arm bones
+            if (enableArmPointing)
+            {
+                _leftArmBone = _animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+                _rightArmBone = _animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
+                
+                if (_leftArmBone == null)
+                {
+                    _leftArmBone = FindChildByName(transform, "LeftArm");
+                }
+                if (_leftArmBone == null)
+                {
+                    _leftArmBone = FindChildByName(transform, "leftArm");
+                }
+                if (_leftArmBone == null)
+                {
+                    _leftArmBone = FindChildByName(transform, "L_Arm");
+                }
+                
+                if (_rightArmBone == null)
+                {
+                    _rightArmBone = FindChildByName(transform, "RightArm");
+                }
+                if (_rightArmBone == null)
+                {
+                    _rightArmBone = FindChildByName(transform, "rightArm");
+                }
+                if (_rightArmBone == null)
+                {
+                    _rightArmBone = FindChildByName(transform, "R_Arm");
+                }
+                
+                if (_leftArmBone != null)
+                {
+                    _originalLeftArmRotation = _leftArmBone.localRotation;
+                }
+                if (_rightArmBone != null)
+                {
+                    _originalRightArmRotation = _rightArmBone.localRotation;
+                }
+                
+                if (_leftArmBone == null && _rightArmBone == null)
+                {
+                    Debug.LogWarning($"[ZombieAI] {gameObject.name}: Arm bones not found! Arm pointing disabled.");
+                    enableArmPointing = false;
+                }
+            }
+            
+            _trackingInitialized = true;
+        }
+        
+        /// <summary>
+        /// Find a child transform by name (recursive search)
+        /// </summary>
+        private Transform FindChildByName(Transform parent, string name)
+        {
+            // Check direct children first
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name.Equals(name, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return child;
+                }
+            }
+            
+            // Recursively search in all children
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                Transform found = FindChildByName(child, name);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Find the closest player from the PlayerRegistry
+        /// </summary>
+        private void FindClosestPlayer()
+        {
+            if (PlayerRegistry.Instance == null || PlayerRegistry.Instance.Players.Count == 0)
+            {
+                _player = null;
+                return;
+            }
+            
+            Transform closestPlayer = null;
+            float closestDistance = float.MaxValue;
+            
+            foreach (var playerObj in PlayerRegistry.Instance.Players)
+            {
+                if (playerObj == null) continue;
+                
+                float distance = Vector3.Distance(transform.position, playerObj.transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestPlayer = playerObj.transform;
+                }
+            }
+            
+            _player = closestPlayer;
         }
         
         /// <summary>
@@ -235,8 +446,6 @@ namespace ZombieGame.NPC.Enemy.Zombie
                 
                 // Set minimum attack distance to 80% of attack range
                 minAttackDistance = attackRange * 0.8f;
-                
-                Debug.Log($"Zombie arm span: {armSpan:F2}m, Raw arm reach: {armReach:F2}m, Attack range (with buffer): {attackRange:F2}m, Min attack distance: {minAttackDistance:F2}m");
             }
             else if (leftShoulder != null && rightShoulder != null)
             {
@@ -257,8 +466,6 @@ namespace ZombieGame.NPC.Enemy.Zombie
                 // Add buffer for body size and combat space
                 attackRange = armReach + armReachBuffer;
                 minAttackDistance = attackRange * 0.8f;
-                
-                Debug.Log($"Zombie arm reach estimated from shoulders: {armReach:F2}m, Attack range (with buffer): {attackRange:F2}m, Min attack distance: {minAttackDistance:F2}m");
             }
             else
             {
@@ -274,7 +481,16 @@ namespace ZombieGame.NPC.Enemy.Zombie
         /// </summary>
         private void UpdateAI()
         {
+            // Always find the closest player from registry
+            FindClosestPlayer();
+            
             float distanceToPlayer = _player != null ? Vector3.Distance(transform.position, _player.position) : float.MaxValue;
+            
+            // Update detection state
+            UpdateDetectionState(distanceToPlayer);
+            
+            // Update head and arm tracking
+            UpdateTracking();
             
             switch (_currentState)
             {
@@ -297,6 +513,179 @@ namespace ZombieGame.NPC.Enemy.Zombie
         }
         
         /// <summary>
+        /// Update detection state based on player distance
+        /// </summary>
+        private void UpdateDetectionState(float distanceToPlayer)
+        {
+            // Player is detected if within detection range
+            _isPlayerDetected = _player != null && distanceToPlayer <= detectionRange;
+        }
+        
+        /// <summary>
+        /// Update head and arm tracking to look at player
+        /// </summary>
+        private void UpdateTracking()
+        {
+            if (!_trackingInitialized || _player == null) 
+            {
+                ResetTracking();
+                return;
+            }
+            
+            // Update head tracking (only when player is detected)
+            if (enableHeadTracking && _headBone != null && _isPlayerDetected)
+            {
+                UpdateHeadTracking();
+            }
+            else if (enableHeadTracking && _headBone != null)
+            {
+                ResetHeadTracking();
+            }
+            
+            // Update arm pointing (only when player is detected)
+            if (enableArmPointing && _isPlayerDetected)
+            {
+                UpdateArmPointing();
+            }
+            else
+            {
+                ResetArmPointing();
+            }
+        }
+        
+        /// <summary>
+        /// Update head tracking to look at player with zombie-like flexibility
+        /// </summary>
+        private void UpdateHeadTracking()
+        {
+            if (_headBone == null || _player == null) return;
+
+            // Calculate direction from head to player
+            Vector3 directionToPlayer = (_player.position - _headBone.position).normalized;
+            
+            // Create a rotation that looks at the player
+            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+
+            // Convert to local space relative to the head bone's parent
+            if (_headBone.parent != null)
+            {
+                targetRotation = Quaternion.Inverse(_headBone.parent.rotation) * targetRotation;
+            }
+            
+            // Get euler angles and handle wrapping
+            Vector3 eulerAngles = targetRotation.eulerAngles;
+            
+            // Convert from 0-360 to -180 to 180
+            if (eulerAngles.x > 180f) eulerAngles.x -= 360f;
+            if (eulerAngles.y > 180f) eulerAngles.y -= 360f;
+            if (eulerAngles.z > 180f) eulerAngles.z -= 360f;
+            
+            // Clamp angles with zombie-like flexibility
+            eulerAngles.x = Mathf.Clamp(eulerAngles.x, -maxHeadRotationVertical, maxHeadRotationVertical);
+            eulerAngles.y = Mathf.Clamp(eulerAngles.y, -maxHeadRotationHorizontal, maxHeadRotationHorizontal);
+            eulerAngles.z = 0; // No roll rotation
+            
+            targetRotation = Quaternion.Euler(eulerAngles);
+            
+            // Smoothly rotate head
+            _headBone.localRotation = Quaternion.Slerp(_headBone.localRotation, targetRotation, headRotationSpeed * Time.deltaTime);
+        }
+        
+        /// <summary>
+        /// Update arm pointing towards player
+        /// </summary>
+        private void UpdateArmPointing()
+        {
+            if (_player == null) return;
+            
+            // Point left arm
+            if (_leftArmBone != null)
+            {
+                UpdateArmBonePointing(_leftArmBone, _originalLeftArmRotation);
+            }
+            
+            // Point right arm
+            if (_rightArmBone != null)
+            {
+                UpdateArmBonePointing(_rightArmBone, _originalRightArmRotation);
+            }
+        }
+        
+        /// <summary>
+        /// Update individual arm bone pointing
+        /// </summary>
+        private void UpdateArmBonePointing(Transform armBone, Quaternion originalRotation)
+        {
+            if (armBone == null || _player == null) return;
+            
+            // Calculate direction from arm to player
+            Vector3 directionToPlayer = (_player.position - armBone.position).normalized;
+            
+            // Create a rotation that points at the player
+            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+            
+            // Convert to local space relative to the arm bone's parent
+            if (armBone.parent != null)
+            {
+                targetRotation = Quaternion.Inverse(armBone.parent.rotation) * targetRotation;
+            }
+            
+            // Get euler angles and handle wrapping
+            Vector3 eulerAngles = targetRotation.eulerAngles;
+            
+            // Convert from 0-360 to -180 to 180
+            if (eulerAngles.x > 180f) eulerAngles.x -= 360f;
+            if (eulerAngles.y > 180f) eulerAngles.y -= 360f;
+            if (eulerAngles.z > 180f) eulerAngles.z -= 360f;
+            
+            // Clamp angles with zombie-like flexibility
+            eulerAngles.x = Mathf.Clamp(eulerAngles.x, -maxArmRotationAngle, maxArmRotationAngle);
+            eulerAngles.y = Mathf.Clamp(eulerAngles.y, -maxArmRotationAngle, maxArmRotationAngle);
+            eulerAngles.z = Mathf.Clamp(eulerAngles.z, -maxArmRotationAngle, maxArmRotationAngle);
+            
+            targetRotation = Quaternion.Euler(eulerAngles);
+            
+            // Smoothly rotate arm
+            armBone.localRotation = Quaternion.Slerp(armBone.localRotation, targetRotation, armRotationSpeed * Time.deltaTime);
+        }
+        
+        /// <summary>
+        /// Reset all tracking to original positions
+        /// </summary>
+        private void ResetTracking()
+        {
+            ResetHeadTracking();
+            ResetArmPointing();
+        }
+        
+        /// <summary>
+        /// Reset head rotation to original position
+        /// </summary>
+        private void ResetHeadTracking()
+        {
+            if (_headBone != null && _trackingInitialized)
+            {
+                _headBone.localRotation = Quaternion.Slerp(_headBone.localRotation, _originalHeadRotation, headRotationSpeed * Time.deltaTime);
+            }
+        }
+        
+        /// <summary>
+        /// Reset arm pointing to original positions
+        /// </summary>
+        private void ResetArmPointing()
+        {
+            if (_leftArmBone != null && _trackingInitialized)
+            {
+                _leftArmBone.localRotation = Quaternion.Slerp(_leftArmBone.localRotation, _originalLeftArmRotation, armRotationSpeed * Time.deltaTime);
+            }
+            
+            if (_rightArmBone != null && _trackingInitialized)
+            {
+                _rightArmBone.localRotation = Quaternion.Slerp(_rightArmBone.localRotation, _originalRightArmRotation, armRotationSpeed * Time.deltaTime);
+            }
+        }
+        
+        /// <summary>
         /// Handle idle state behavior
         /// </summary>
         private void HandleIdleState(float distanceToPlayer)
@@ -309,11 +698,11 @@ namespace ZombieGame.NPC.Enemy.Zombie
             }
             
             // Play idle animation
-            if (_animator != null && idleAnimation != null)
+            if (_animator != null)
             {
-                if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(idleAnimation.name))
+                if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(idleAnimation.GetStateName()))
                 {
-                    _animator.Play(idleAnimation.name);
+                    _animator.Play(idleAnimation.GetStateName());
                 }
                 // Reset animation speed to normal for idle
                 _animator.speed = 1f;
@@ -352,7 +741,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
         private void HandleStaticWandering()
         {
             // Update static wandering - returns true if currently moving
-            bool isMoving = staticWandering.UpdateWandering();
+            bool isMoving = staticWandering.UpdateWandering(wanderWalkAnimation.GetMovementSpeed());
             bool isWaitingBetweenSteps = staticWandering.IsWaitingBetweenSteps();
             
             // Update legacy variables for compatibility
@@ -362,22 +751,22 @@ namespace ZombieGame.NPC.Enemy.Zombie
             // Handle animations based on wandering state
             if (_animator != null)
             {
-                if (isMoving && walkWanderingAnimation != null)
+                if (isMoving && wanderWalkAnimation.IsValid())
                 {
                     // Play walking animation when moving
-                    if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(walkWanderingAnimation.name))
+                    if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(wanderWalkAnimation.GetStateName()))
                     {
-                        _animator.Play(walkWanderingAnimation.name);
+                        _animator.Play(wanderWalkAnimation.GetStateName());
                     }
                     // Set animation speed to match movement
-                    _animator.speed = wanderAnimationSpeed;
+                    _animator.speed = wanderWalkAnimation.GetAnimationSpeed();
                 }
-                else if (isWaitingBetweenSteps && idleAnimation != null)
+                else if (isWaitingBetweenSteps && idleAnimation.IsValid())
                 {
                     // Play idle animation when waiting between steps
-                    if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(idleAnimation.name))
+                    if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(idleAnimation.GetStateName()))
                     {
-                        _animator.Play(idleAnimation.name);
+                        _animator.Play(idleAnimation.GetStateName());
                     }
                     // Reset animation speed to normal for idle
                     _animator.speed = 1f;
@@ -432,7 +821,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
             direction.y = 0; // Keep movement horizontal
             
             // Move towards player (speed depends on walk/run setting)
-            float moveSpeed = useWalkForChasing ? staticWandering.wanderWalkSpeed : runSpeed;
+            float moveSpeed = useWalkForChasing ? chaseWalkAnimation.GetMovementSpeed() : chaseRunAnimation.GetMovementSpeed();
             transform.position += direction * moveSpeed * Time.deltaTime;
             
             // Look at player
@@ -441,19 +830,16 @@ namespace ZombieGame.NPC.Enemy.Zombie
                 transform.rotation = Quaternion.LookRotation(direction);
             }
             
-            // Play appropriate chasing animation
+                        // Play appropriate chasing animation
             if (_animator != null)
             {
-                AnimationClip chasingAnimation = useWalkForChasing ? walkChasingAnimation : runChasingAnimation;
-                if (chasingAnimation != null)
+                string chasingStateName = useWalkForChasing ? chaseWalkAnimation.GetStateName() : chaseRunAnimation.GetStateName();
+                if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(chasingStateName))
                 {
-                    if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(chasingAnimation.name))
-                    {
-                        _animator.Play(chasingAnimation.name);
-                    }
-                    // Set animation speed to match movement
-                    _animator.speed = useWalkForChasing ? chaseWalkAnimationSpeed : chaseRunAnimationSpeed;
+                    _animator.Play(chasingStateName);
                 }
+                // Set animation speed to match movement
+                _animator.speed = useWalkForChasing ? chaseWalkAnimation.GetAnimationSpeed() : chaseRunAnimation.GetAnimationSpeed();
             }
         }
         
@@ -484,11 +870,11 @@ namespace ZombieGame.NPC.Enemy.Zombie
             }
             
             // Play attack animation
-            if (_animator != null && attackAnimation != null)
+            if (_animator != null)
             {
-                if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(attackAnimation.name))
+                if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(attackAnimation.GetStateName()))
                 {
-                    _animator.Play(attackAnimation.name);
+                    _animator.Play(attackAnimation.GetStateName());
                 }
                 // Reset animation speed to normal for attack
                 _animator.speed = 1f;
@@ -534,19 +920,19 @@ namespace ZombieGame.NPC.Enemy.Zombie
         {
             SetState(ZombieState.Dead);
             
+            // Reset head and arm tracking
+            ResetTracking();
+            
             // Play death animation (front fall or back fall)
             if (_animator != null)
             {
-                AnimationClip deathAnimation = useFrontFallDeath ? deathFrontFallAnimation : deathBackFallAnimation;
-                if (deathAnimation != null)
+                string deathStateName = useFrontFallDeath ? deathFrontAnimation.GetStateName() : deathBackAnimation.GetStateName();
+                if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(deathStateName))
                 {
-                    if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(deathAnimation.name))
-                    {
-                        _animator.Play(deathAnimation.name);
-                    }
-                    // Reset animation speed to normal for death
-                    _animator.speed = 1f;
+                    _animator.Play(deathStateName);
                 }
+                // Reset animation speed to normal for death
+                _animator.speed = 1f;
             }
         }
         
@@ -636,48 +1022,44 @@ namespace ZombieGame.NPC.Enemy.Zombie
         {
             int missingCount = 0;
             
-            if (idleAnimation == null)
+            if (!idleAnimation.IsValid())
             {
                 missingCount++;
             }
             
-            if (walkWanderingAnimation == null)
+            if (!wanderWalkAnimation.IsValid())
             {
                 missingCount++;
             }
             
-            if (walkChasingAnimation == null)
+            if (!chaseWalkAnimation.IsValid())
             {
                 missingCount++;
             }
             
-            if (runChasingAnimation == null)
+            if (!chaseRunAnimation.IsValid())
             {
                 missingCount++;
             }
             
-            if (attackAnimation == null)
+            if (!attackAnimation.IsValid())
             {
                 missingCount++;
             }
             
-            if (deathBackFallAnimation == null)
+            if (!deathBackAnimation.IsValid())
             {
                 missingCount++;
             }
             
-            if (deathFrontFallAnimation == null)
+            if (!deathFrontAnimation.IsValid())
             {
                 missingCount++;
             }
             
-            if (missingCount == 0)
+            if (missingCount > 0)
             {
-                // All animations assigned
-            }
-            else
-            {
-                // Some animations missing
+                Debug.LogWarning($"[ZombieAI] {gameObject.name}: {missingCount} animation(s) are missing assignments!");
             }
         }
         
@@ -694,7 +1076,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
             
             CalculateArmSpanAttackRange();
         }
-        
+
         /// <summary>
         /// Draw debug information
         /// </summary>
@@ -711,6 +1093,28 @@ namespace ZombieGame.NPC.Enemy.Zombie
             // Draw minimum attack distance (inner ring)
             Gizmos.color = Color.magenta;
             Gizmos.DrawWireSphere(transform.position, minAttackDistance);
+            
+            // Draw head tracking visualization
+            if (enableHeadTracking && _headBone != null && _player != null && _isPlayerDetected)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(_headBone.position, _player.position);
+            }
+            
+            // Draw arm pointing visualization
+            if (enableArmPointing && _player != null && _isPlayerDetected)
+            {
+                if (_leftArmBone != null)
+                {
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawLine(_leftArmBone.position, _player.position);
+                }
+                if (_rightArmBone != null)
+                {
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawLine(_rightArmBone.position, _player.position);
+                }
+            }
             
             // Draw static wandering path
             staticWandering.DrawGizmos(transform, _currentState == ZombieState.Wandering);

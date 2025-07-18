@@ -359,6 +359,7 @@ namespace ZombieGame.Player
                 GroundLayers = 1 << LayerMask.NameToLayer("Default");
             }
 
+#if UNITY_EDITOR
             // Set default audio clips if they're not assigned
             if (LandingAudioClip == null)
             {
@@ -379,6 +380,7 @@ namespace ZombieGame.Player
                     FootstepAudioClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>($"Assets/StarterAssets/ThirdPersonController/Character/Sfx/Player_Footstep_{(i + 1):D2}.wav");
                 }
             }
+#endif
         }
 
         private void Awake()

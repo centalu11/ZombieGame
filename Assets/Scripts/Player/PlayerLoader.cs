@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEditor;
 using ZombieGame.Input;
 using ZombieGame.Player.Vehicle;
 using ZombieGame.Player.Animations;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace ZombieGame.Player
 {
@@ -21,6 +23,7 @@ namespace ZombieGame.Player
     [RequireComponent(typeof(CrosshairController))]
     [RequireComponent(typeof(CameraController))]
     [RequireComponent(typeof(EyeAnimationHandler))]
+    // PlayerNetworkController will be added to parent GameObject
     public class PlayerLoader : MonoBehaviour
     {
         private void OnValidate()
@@ -58,8 +61,10 @@ namespace ZombieGame.Player
             var playerInput = GetComponent<PlayerInput>();
             if (playerInput != null)
             {
+#if UNITY_EDITOR
                 // Direct reference to the asset
                 playerInput.actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>("Assets/Scripts/Input/ZombieGameInputs.inputactions");
+#endif
                 playerInput.defaultActionMap = "Player";
                 playerInput.notificationBehavior = PlayerNotifications.SendMessages;
             }

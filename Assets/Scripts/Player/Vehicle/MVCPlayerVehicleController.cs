@@ -38,7 +38,7 @@ namespace ZombieGame.Player.Vehicle
         {
             if (playerMesh == null)
             {
-                Transform meshTransform = transform.Find("Model/Mesh");
+                Transform meshTransform = transform.Find("Mesh");
                 if (meshTransform != null)
                 {
                     playerMesh = meshTransform.gameObject;
@@ -83,12 +83,12 @@ namespace ZombieGame.Player.Vehicle
 
             if (vehicleFollower == null)
             {
-                Debug.LogError("Vehicle follower not found, please drag your vehicle follower game object to the Vehicle Follower field");
+                // Debug.LogError("Vehicle follower not found, please drag your vehicle follower game object to the Vehicle Follower field");
             }
 
             if (vehicleCamera == null)
             {
-                Debug.LogError("Vehicle camera not found, please drag your vehicle camera game object to the Vehicle Camera field");
+                // Debug.LogError("Vehicle camera not found, please drag your vehicle camera game object to the Vehicle Camera field");
             }
 
             vehicleFollower.SetActive(false);
