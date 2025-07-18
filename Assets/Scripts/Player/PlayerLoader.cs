@@ -14,6 +14,7 @@ namespace ZombieGame.Player
     /// Add this component to automatically set up all necessary player scripts.
     /// Supports any IPlayerVehicleController implementation (MVCPlayerVehicleController, etc.)
     /// </summary>
+    [RequireComponent(typeof(PlayerState))]
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(ZombieGameInputs))]
     [RequireComponent(typeof(PlayerInput))]
@@ -23,6 +24,7 @@ namespace ZombieGame.Player
     [RequireComponent(typeof(CrosshairController))]
     [RequireComponent(typeof(CameraController))]
     [RequireComponent(typeof(EyeAnimationHandler))]
+    [RequireComponent(typeof(PlayerAudioController))]
     // PlayerNetworkController will be added to parent GameObject
     public class PlayerLoader : MonoBehaviour
     {

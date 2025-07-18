@@ -1,6 +1,7 @@
 using UnityEngine;
 using ZombieGame.Core;
 using ZombieGame.NPC.Enemy.Zombie.Structs;
+using ZombieGame.Player;
 
 namespace ZombieGame.NPC.Enemy.Zombie
 {
@@ -779,6 +780,16 @@ namespace ZombieGame.NPC.Enemy.Zombie
         /// </summary>
         private void HandleChaseEnd()
         {
+            // Unregister this zombie as chasing the player
+            if (_player != null)
+            {
+                var playerState = _player.GetComponent<PlayerState>();
+                if (playerState != null)
+                {
+                    playerState.UnregisterChasingZombie();
+                }
+            }
+            
             if (staticWandering.HandleChaseEnd())
             {
                 // Restore wandering state
@@ -902,6 +913,15 @@ namespace ZombieGame.NPC.Enemy.Zombie
                     break;
                     
                 case ZombieState.Chasing:
+                    // Register this zombie as chasing the player
+                    if (_player != null)
+                    {
+                        var playerState = _player.GetComponent<PlayerState>();
+                        if (playerState != null)
+                        {
+                            playerState.RegisterChasingZombie();
+                        }
+                    }
                     break;
                     
                 case ZombieState.Attacking:

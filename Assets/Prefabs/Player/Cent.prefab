@@ -334,6 +334,8 @@ GameObject:
   - component: {fileID: 3222486854057380706}
   - component: {fileID: 7914203898067810826}
   - component: {fileID: 8075683014467550289}
+  - component: {fileID: 4585963205539937216}
+  - component: {fileID: 8042588676487194891}
   m_Layer: 8
   m_Name: PlayerArmature
   m_TagString: Player
@@ -595,7 +597,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blinkDuration: 0.1
-  blinkInterval: 8
+  blinkInterval: 3.62
 --- !u!114 &8075683014467550289
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -608,6 +610,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7429a3e1bb60f0e4e93e2ce705be59bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4585963205539937216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4715014961994207436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b69c62654388748b0ab8bee96d04e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ambienceMusicClip: {fileID: 8300000, guid: 9060138567fcf0942b1a30e823d2c5ab, type: 3}
+  ambienceVolume: 0.55
+  ambienceSpeed: 1
+  ambienceLoop: 1
+  chaseMusicClip: {fileID: 8300000, guid: 0acaa36fbff33e44496704da33727bad, type: 3}
+  chaseVolume: 1
+  chaseSpeed: 1
+  chaseLoop: 1
+  chaseMusicRange:
+    startTime: 0.021818183
+    endTime: 0.9154545
+    loopStartTimes:
+    - 0.22818182
+    - 0.6881818
+--- !u!114 &8042588676487194891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4715014961994207436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7b9659e122303c4b887cb671a95202d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hp: 100
+  detectionState: 0
 --- !u!1 &7261240733285281989
 GameObject:
   m_ObjectHideFlags: 0

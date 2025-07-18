@@ -940,7 +940,7 @@ MonoBehaviour:
     - clip: {fileID: 7400000, guid: 23ee7f6864c52b243bfb4f2da09bc287, type: 2}
       animationSpeed: 1
       movementSpeed: 0
-    randomized: 0
+    randomized: 1
     selectedClipIndex: 0
   wanderWalkAnimation:
     stateName: Z_Wander_Walk
@@ -951,7 +951,7 @@ MonoBehaviour:
     - clip: {fileID: 7400000, guid: a0389bcc17a6335409898ddb374c1570, type: 2}
       animationSpeed: 1.5
       movementSpeed: 0.35
-    randomized: 0
+    randomized: 1
     selectedClipIndex: 0
   chaseWalkAnimation:
     stateName: Z_Chase_Walk
@@ -962,7 +962,7 @@ MonoBehaviour:
     - clip: {fileID: 7400000, guid: 37e6af8636979e04086967e3bd667606, type: 2}
       animationSpeed: 1.5
       movementSpeed: 0.35
-    randomized: 0
+    randomized: 1
     selectedClipIndex: 0
   chaseRunAnimation:
     stateName: Z_Chase_Run
