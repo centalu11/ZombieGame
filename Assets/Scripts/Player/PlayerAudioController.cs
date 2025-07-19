@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using ZombieGame.Environment;
 
 namespace ZombieGame.Player
 {
@@ -106,50 +107,44 @@ namespace ZombieGame.Player
 
     public class PlayerAudioController : MonoBehaviour
     {
-        [Header("Ambience Background Music")]
-        [Tooltip("Background music clip to play")]
-        public AudioClip ambienceMusicClip;
-        
-        [Tooltip("Volume of the background music (0.0 to 1.0)")]
-        [Range(0f, 1f)]
-        public float ambienceVolume = 1f;
-        
-        [Tooltip("Playback speed of the music (1.0 = normal speed)")]
-        [Range(0.1f, 3f)]
-        public float ambienceSpeed = 1f;
-        
-        [Tooltip("Whether the music should loop")]
-        public bool ambienceLoop = true;
-        
         [Header("Chase Background Music")]
         [Tooltip("Music clip to play during chase")]
         public AudioClip chaseMusicClip;
         
         [Tooltip("Volume of chase music (0.0 to 1.0)")]
         [Range(0f, 1f)]
-        public float chaseVolume = 1f;
+        public float chaseVolume = 0.55f;
+
+        [Tooltip("Enable fade effects for chase music")]
+        public bool chaseFade = true;
         
-        [Tooltip("Playback speed of chase music (1.0 = normal speed)")]
-        [Range(0.1f, 3f)]
-        public float chaseSpeed = 1f;
+        [Tooltip("Fade in time for chase music (seconds)")]
+        [Range(0f, 10f)]
+        public float chaseFadeIn = 3f;
         
+        [Tooltip("Fade out time for chase music (seconds)")]
+        [Range(0f, 10f)]
+        public float chaseFadeOut = 5f;
+
         [Tooltip("Whether chase music should loop")]
         public bool chaseLoop = true;
+        
         
         [Header("Chase Music Range")]
         [Tooltip("Start and end times for chase music (0.0 = start of clip, 1.0 = end of clip)")]
         public ChaseMusicRange chaseMusicRange = new ChaseMusicRange();
         
-        private AudioSource ambienceAudioSource;
         private AudioSource[] chaseAudioSources = new AudioSource[2];
         private int currentChaseAudioSource = 0; // 0 = intro, 1 = loop
         private double chaseGoalTime = 0; // DSP time for next chase music event
         private bool isChaseMusicActive = false;
         private PlayerState playerState;
         private GameObject environmentAudioObject;
+        private EnvironmentAudioController environmentAudioController;
         private Coroutine fadeOutCoroutine;
-        private Coroutine chaseRangeCoroutine;
-        private float originalChaseVolume;
+        private Coroutine fadeInCoroutine;
+        private float selectedLoopStartTime = -1f;
+        private float currentChaseVolume; // Track current volume independently of AudioSource
         
         private void Start()
         {
@@ -163,35 +158,28 @@ namespace ZombieGame.Player
                 Debug.LogWarning("[PlayerAudioController] PlayerState component not found. Chase music functionality will be disabled.");
             }
             
-            // Configure ambience AudioSource
-            ambienceAudioSource.clip = ambienceMusicClip;
-            ambienceAudioSource.volume = ambienceVolume;
-            ambienceAudioSource.pitch = ambienceSpeed;
-            ambienceAudioSource.loop = ambienceLoop;
-            ambienceAudioSource.playOnAwake = true;
+            // Try to get EnvironmentAudioController from Environment GameObject
+            if (environmentAudioObject != null)
+            {
+                environmentAudioController = environmentAudioObject.GetComponent<EnvironmentAudioController>();
+            }
+            
+            // Initialize current volume
+            currentChaseVolume = chaseVolume;
             
             // Configure chase intro AudioSource (index 0)
             chaseAudioSources[0].clip = null;
             chaseAudioSources[0].volume = chaseVolume;
-            chaseAudioSources[0].pitch = chaseSpeed;
+            chaseAudioSources[0].pitch = 1f; // Normal speed
             chaseAudioSources[0].loop = false;
             chaseAudioSources[0].playOnAwake = false;
 
             // Configure chase loop AudioSource (index 1) - empty for now
             chaseAudioSources[1].clip = null; // Empty audio source
             chaseAudioSources[1].volume = chaseVolume;
-            chaseAudioSources[1].pitch = chaseSpeed;
+            chaseAudioSources[1].pitch = 1f; // Normal speed
             chaseAudioSources[1].loop = false;
             chaseAudioSources[1].playOnAwake = false;
-            
-            // Store original chase volume for fade effects
-            originalChaseVolume = chaseVolume;
-            
-            // Start playing ambience if we have a clip
-            if (ambienceMusicClip != null)
-            {
-                ambienceAudioSource.Play();
-            }
         }
         
         /// <summary>
@@ -208,13 +196,6 @@ namespace ZombieGame.Player
                 environmentAudioObject = new GameObject("Environment");
             }
             
-            // Add or get ambience AudioSource
-            ambienceAudioSource = environmentAudioObject.GetComponent<AudioSource>();
-            if (ambienceAudioSource == null)
-            {
-                ambienceAudioSource = environmentAudioObject.AddComponent<AudioSource>();
-            }
-            
             // Add chase AudioSources (second and third AudioSources on the same GameObject)
             chaseAudioSources[0] = environmentAudioObject.AddComponent<AudioSource>();
             chaseAudioSources[1] = environmentAudioObject.AddComponent<AudioSource>();
@@ -225,7 +206,11 @@ namespace ZombieGame.Player
         /// </summary>
         public void PlayChaseMusic()
         {
+            // For reference just in case the input get changed, the loop points are 12.55 and 37.85
+
             if (chaseAudioSources[0] == null || chaseMusicClip == null) return;
+            
+
             
             float clipLength = chaseMusicClip.length;
             float startTime = chaseMusicRange.GetStartTimeInSeconds(clipLength);
@@ -235,30 +220,59 @@ namespace ZombieGame.Player
             // If chaseGoalTime is 0 or null, play the intro clip
             if (chaseGoalTime == 0)
             {
-                // Stop ambience music
-                if (ambienceAudioSource != null)
+                // Stop ambience music if EnvironmentAudioController is available
+                if (environmentAudioController != null)
                 {
-                    ambienceAudioSource.Stop();
+                    environmentAudioController.StopMusic();
                 }
                 
                 chaseAudioSources[currentChaseAudioSource].clip = chaseMusicClip;
                 chaseAudioSources[currentChaseAudioSource].time = startTime;
+                
+                // Apply fade in if enabled
+                if (chaseFade)
+                {
+                    chaseAudioSources[currentChaseAudioSource].volume = 0f; // Start at 0 volume
+                    currentChaseVolume = 0f; // Update tracked volume
+                    // Start fade in coroutine
+                    if (fadeInCoroutine != null)
+                    {
+                        StopCoroutine(fadeInCoroutine);
+                    }
+                    fadeInCoroutine = StartCoroutine(FadeInChaseMusic());
+                }
+                else
+                {
+                    chaseAudioSources[currentChaseAudioSource].volume = currentChaseVolume; // Use current volume
+                }
+                
                 chaseAudioSources[currentChaseAudioSource].PlayScheduled(AudioSettings.dspTime);
                 
                 // Set next goal time for intro duration
                 chaseGoalTime = AudioSettings.dspTime + (loopStartTime - startTime);    
                 chaseAudioSources[currentChaseAudioSource].SetScheduledEndTime(chaseGoalTime);
+
+                selectedLoopStartTime = loopStartTime;
             }
             else
             {
+                // Check if we have a selected loop start time, if so use it, otherwise use the random loop start time
+                // This for the first clip after the into so it will start at the selected loop
+                loopStartTime = selectedLoopStartTime > -1f ? selectedLoopStartTime : loopStartTime;
+
                 // There's a goal time, assign the loop clip
                 chaseAudioSources[currentChaseAudioSource].clip = chaseMusicClip;
                 chaseAudioSources[currentChaseAudioSource].time = loopStartTime;
+                chaseAudioSources[currentChaseAudioSource].volume = currentChaseVolume; // Use current volume
                 chaseAudioSources[currentChaseAudioSource].PlayScheduled(AudioSettings.dspTime);
                 
                 // Set next goal time for loop duration
                 chaseGoalTime = AudioSettings.dspTime + (endTime - loopStartTime) - 0.1f;
                 chaseAudioSources[currentChaseAudioSource].SetScheduledEndTime(chaseGoalTime + 0.1f);
+
+
+                // After the first loop clip, remove this
+                selectedLoopStartTime = -1f;
             }
             
             // Toggle the current AudioSource index
@@ -268,92 +282,46 @@ namespace ZombieGame.Player
         }
         
         /// <summary>
-        /// Start playing chase music within the specified range
-        /// </summary>
-        private void StartChaseMusicRange()
-        {
-            if (chaseAudioSources[0] == null || chaseMusicClip == null) return;
-            
-            // Stop any existing range coroutine
-            if (chaseRangeCoroutine != null)
-            {
-                StopCoroutine(chaseRangeCoroutine);
-            }
-            
-            // Start the range playback coroutine
-            chaseRangeCoroutine = StartCoroutine(PlayChaseMusicRange());
-        }
-        
-        /// <summary>
-        /// Coroutine to play chase music within the specified range
-        /// </summary>
-        private IEnumerator PlayChaseMusicRange()
-        {
-            if (chaseAudioSources[0] == null || chaseMusicClip == null) yield break;
-            
-            float clipLength = chaseMusicClip.length;
-            float startTime = chaseMusicRange.GetStartTimeInSeconds(clipLength);
-            float endTime = chaseMusicRange.GetEndTimeInSeconds(clipLength);
-            float loopStartTime = chaseMusicRange.GetLoopStartTimeInSeconds(clipLength);
-            float rangeDuration = chaseMusicRange.GetDuration(clipLength);
-            
-            // Validate range
-            if (startTime >= endTime || rangeDuration <= 0)
-            {
-                Debug.LogWarning("[PlayerAudioController] Invalid chase music range. Using full clip.");
-                startTime = 0f;
-                endTime = clipLength;
-                rangeDuration = clipLength;
-            }
-            
-            do
-            {
-                // Set the start time and play
-                chaseAudioSources[0].time = startTime;
-                chaseAudioSources[0].Play();
-                
-                // Wait for the duration of the range
-                yield return new WaitForSeconds(rangeDuration);
-                
-                // If not looping, break out of the loop
-                if (!chaseLoop)
-                {
-                    break;
-                }
-                
-                // If looping and we have a loop start time, set it for next iteration
-                if (chaseLoop && isChaseMusicActive)
-                {
-                    startTime = loopStartTime;
-                }
-                
-            } while (chaseLoop && isChaseMusicActive);
-        }
-        
-        /// <summary>
         /// Revert to ambience background music
         /// </summary>
         public void RevertToOriginalMusic()
         {
-            if (ambienceAudioSource == null || ambienceMusicClip == null) return;
+            // Don't start a new fade out if one is already running
+            if (fadeOutCoroutine != null) return;
+            
+            // Stop fade in if it's running
+            if (fadeInCoroutine != null)
+            {
+                StopCoroutine(fadeInCoroutine);
+                fadeInCoroutine = null;
+            }
             
             if (isChaseMusicActive)
             {
-                // Stop the range coroutine
-                if (chaseRangeCoroutine != null)
+                if (chaseFade)
                 {
-                    StopCoroutine(chaseRangeCoroutine);
-                    chaseRangeCoroutine = null;
+                    // Start fade out coroutine for chase music
+                    fadeOutCoroutine = StartCoroutine(FadeOutChaseMusic());
+                    // Don't set isChaseMusicActive = false here - let the coroutine do it at the end
                 }
-                
-                // Start fade out coroutine for chase music (don't start ambience yet)
-                if (fadeOutCoroutine != null)
+                else
                 {
-                    StopCoroutine(fadeOutCoroutine);
+                    // Stop chase music immediately without fade
+                    chaseAudioSources[0].Stop();
+                    chaseAudioSources[1].Stop();
+                    chaseAudioSources[0].volume = chaseVolume;
+                    chaseAudioSources[1].volume = chaseVolume;
+                    chaseGoalTime = 0;
+                    selectedLoopStartTime = -1f;
+                    
+                    // Start ambience music if EnvironmentAudioController is available
+                    if (environmentAudioController != null)
+                    {
+                        environmentAudioController.PlayMusic();
+                    }
+                    
+                    isChaseMusicActive = false;
                 }
-                fadeOutCoroutine = StartCoroutine(FadeOutChaseMusic());
-                
-                isChaseMusicActive = false;
             }
         }
         
@@ -367,10 +335,34 @@ namespace ZombieGame.Player
         
         private void Update()
         {
+            UpdateForChaseMusic();
+        }
+        
+        private void UpdateForChaseMusic()
+        {
             // Check player detection state and update music accordingly
             if (playerState != null)
             {
-                if (playerState.IsBeingChased() && AudioSettings.dspTime > chaseGoalTime)
+                // Handle fade in when player enters chase state
+                if (playerState.IsBeingChased() && fadeOutCoroutine != null)
+                {
+                    // Stop fade out and start fade in
+                    StopCoroutine(fadeOutCoroutine);
+                    fadeOutCoroutine = null;
+                    
+                    if (chaseFade)
+                    {
+                        // Start fade in from current volume to full volume
+                        if (fadeInCoroutine != null)
+                        {
+                            StopCoroutine(fadeInCoroutine);
+                        }
+                        fadeInCoroutine = StartCoroutine(FadeInChaseMusic());
+                    }
+                }
+                
+                // Handle music scheduling
+                if ((playerState.IsBeingChased() || isChaseMusicActive) && AudioSettings.dspTime > chaseGoalTime)
                 {
                     PlayChaseMusic();
                 }
@@ -381,96 +373,79 @@ namespace ZombieGame.Player
             }
         }
         
+
         /// <summary>
-        /// Force update the background music settings (useful for runtime changes)
-        /// </summary>
-        public void UpdateBackgroundMusic()
-        {
-            if (ambienceAudioSource != null)
-            {
-                // Update ambience AudioSource settings
-                ambienceAudioSource.volume = ambienceVolume;
-                ambienceAudioSource.pitch = ambienceSpeed;
-                ambienceAudioSource.loop = ambienceLoop;
-            }
-            
-            if (chaseAudioSources[0] != null)
-            {
-                // Update chase intro AudioSource settings
-                chaseAudioSources[0].volume = chaseVolume;
-                chaseAudioSources[0].pitch = chaseSpeed;
-                chaseAudioSources[0].loop = false;
-            }
-            
-            if (chaseAudioSources[1] != null)
-            {
-                // Update chase loop AudioSource settings
-                chaseAudioSources[1].volume = chaseVolume;
-                chaseAudioSources[1].pitch = chaseSpeed;
-                chaseAudioSources[1].loop = false; // We'll handle looping manually later
-            }
-        }
-        
-        /// <summary>
-        /// Coroutine to fade out chase music over 5 seconds
+        /// Coroutine to fade out chase music
         /// </summary>
         private IEnumerator FadeOutChaseMusic()
         {
-            if (chaseAudioSources[0] == null) yield break;
+            if (chaseAudioSources[currentChaseAudioSource] == null) yield break;
             
-            float startVolume = chaseAudioSources[0].volume;
-            float fadeTime = 5f;
+            float startVolume = currentChaseVolume; // Start from current volume
+            float fadeTime = chaseFadeOut;
             float elapsedTime = 0f;
-            
+
             while (elapsedTime < fadeTime)
             {
                 elapsedTime += Time.deltaTime;
                 float newVolume = Mathf.Lerp(startVolume, 0f, elapsedTime / fadeTime);
+                currentChaseVolume = newVolume; // Update tracked volume
                 chaseAudioSources[0].volume = newVolume;
                 chaseAudioSources[1].volume = newVolume;
+
                 yield return null;
             }
             
             // Stop the chase music after fade is complete
             chaseAudioSources[0].Stop();
             chaseAudioSources[1].Stop();
-            chaseAudioSources[0].volume = originalChaseVolume; // Reset volume for next use
-            chaseAudioSources[1].volume = originalChaseVolume;
-            fadeOutCoroutine = null;
+            chaseAudioSources[0].volume = chaseVolume; // Reset volume for next use
+            chaseAudioSources[1].volume = chaseVolume;
+            currentChaseVolume = chaseVolume; // Reset tracked volume
+
+            isChaseMusicActive = false;
+            
+            // Reset chase goal time
+            chaseGoalTime = 0;
             
             // Now start the ambience music after chase is fully faded out
-            if (ambienceAudioSource != null && ambienceMusicClip != null)
+            if (environmentAudioController != null)
             {
-                ambienceAudioSource.Play();
+                environmentAudioController.PlayMusic();
             }
+            
+            fadeOutCoroutine = null;
         }
         
         /// <summary>
-        /// Coroutine to fade in chase music to original volume
+        /// Coroutine to fade in chase music
         /// </summary>
         private IEnumerator FadeInChaseMusic()
         {
-            if (chaseAudioSources[0] == null) yield break;
+            if (chaseAudioSources[currentChaseAudioSource] == null) yield break;
             
-            // Set chase as active immediately to prevent Update from calling PlayChaseMusic again
-            isChaseMusicActive = true;
-            
-            float startVolume = chaseAudioSources[0].volume;
-            float targetVolume = originalChaseVolume;
-            float fadeTime = 3f; // 3 second fade in as requested
+            float startVolume = currentChaseVolume; // Start from tracked current volume
+            float targetVolume = chaseVolume;
+            float fadeTime = chaseFadeIn;
             float elapsedTime = 0f;
-            
+
             while (elapsedTime < fadeTime)
             {
                 elapsedTime += Time.deltaTime;
                 float newVolume = Mathf.Lerp(startVolume, targetVolume, elapsedTime / fadeTime);
+                currentChaseVolume = newVolume; // Update tracked volume
                 chaseAudioSources[0].volume = newVolume;
                 chaseAudioSources[1].volume = newVolume;
+
                 yield return null;
             }
             
+            // Ensure we reach the target volume exactly
             chaseAudioSources[0].volume = targetVolume;
             chaseAudioSources[1].volume = targetVolume;
+            currentChaseVolume = targetVolume; // Update tracked volume
+            
+            fadeInCoroutine = null;
         }
         
         /// <summary>

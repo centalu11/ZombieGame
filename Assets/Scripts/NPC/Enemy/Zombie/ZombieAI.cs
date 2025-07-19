@@ -786,7 +786,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
                 var playerState = _player.GetComponent<PlayerState>();
                 if (playerState != null)
                 {
-                    playerState.UnregisterChasingZombie();
+                    playerState.UnregisterChasingZombie(gameObject);
                 }
             }
             
@@ -898,7 +898,6 @@ namespace ZombieGame.NPC.Enemy.Zombie
         private void SetState(ZombieState newState)
         {
             if (_currentState == newState) return;
-            
             _currentState = newState;
             
             // Handle state-specific setup
@@ -919,7 +918,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
                         var playerState = _player.GetComponent<PlayerState>();
                         if (playerState != null)
                         {
-                            playerState.RegisterChasingZombie();
+                            playerState.RegisterChasingZombie(gameObject);
                         }
                     }
                     break;

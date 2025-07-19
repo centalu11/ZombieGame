@@ -9,12 +9,13 @@ namespace ZombieGame.Player
     {
         private SerializedProperty ambienceMusicClipProp;
         private SerializedProperty ambienceVolumeProp;
-        private SerializedProperty ambienceSpeedProp;
         private SerializedProperty ambienceLoopProp;
         
         private SerializedProperty chaseMusicClipProp;
         private SerializedProperty chaseVolumeProp;
-        private SerializedProperty chaseSpeedProp;
+        private SerializedProperty chaseFadeProp;
+        private SerializedProperty chaseFadeInProp;
+        private SerializedProperty chaseFadeOutProp;
         private SerializedProperty chaseLoopProp;
         
         private SerializedProperty chaseMusicRangeProp;
@@ -24,7 +25,6 @@ namespace ZombieGame.Player
         private bool isPreviewPlaying = false;
         private float previewStartTime = 0f;
         private float previewEndTime = 0f;
-        private List<float> previewLoopStartTimes = new List<float>();
         private bool showApplyTimeDropdown = false;
         private int selectedTimeField = 0; // 0 = start, 1 = loop start, 2 = end
         private string[] timeFieldOptions = { "Start Time", "Loop Start Time", "End Time" };
@@ -36,12 +36,13 @@ namespace ZombieGame.Player
         {
             ambienceMusicClipProp = serializedObject.FindProperty("ambienceMusicClip");
             ambienceVolumeProp = serializedObject.FindProperty("ambienceVolume");
-            ambienceSpeedProp = serializedObject.FindProperty("ambienceSpeed");
             ambienceLoopProp = serializedObject.FindProperty("ambienceLoop");
             
             chaseMusicClipProp = serializedObject.FindProperty("chaseMusicClip");
             chaseVolumeProp = serializedObject.FindProperty("chaseVolume");
-            chaseSpeedProp = serializedObject.FindProperty("chaseSpeed");
+            chaseFadeProp = serializedObject.FindProperty("chaseFade");
+            chaseFadeInProp = serializedObject.FindProperty("chaseFadeIn");
+            chaseFadeOutProp = serializedObject.FindProperty("chaseFadeOut");
             chaseLoopProp = serializedObject.FindProperty("chaseLoop");
             
             chaseMusicRangeProp = serializedObject.FindProperty("chaseMusicRange");
@@ -79,25 +80,32 @@ namespace ZombieGame.Player
             serializedObject.Update();
             
             // Ambience Background Music Section
-            EditorGUILayout.LabelField("Music Clip");
             EditorGUILayout.PropertyField(ambienceMusicClipProp);
             EditorGUILayout.PropertyField(ambienceVolumeProp);
-            EditorGUILayout.PropertyField(ambienceSpeedProp);
             EditorGUILayout.PropertyField(ambienceLoopProp);
             
             EditorGUILayout.Space();
             
             // Chase Background Music Section
-            EditorGUILayout.LabelField("Music Clip");
             EditorGUILayout.PropertyField(chaseMusicClipProp);
             EditorGUILayout.PropertyField(chaseVolumeProp);
-            EditorGUILayout.PropertyField(chaseSpeedProp);
+            EditorGUILayout.PropertyField(chaseFadeProp);
+            
+            // Show fade settings only if chaseFade is enabled
+            if (chaseFadeProp.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(chaseFadeInProp);
+                EditorGUILayout.PropertyField(chaseFadeOutProp);
+                EditorGUI.indentLevel--;
+            }
+            
             EditorGUILayout.PropertyField(chaseLoopProp);
             
             EditorGUILayout.Space();
             
             // Chase Music Range Section
-            EditorGUILayout.LabelField("Music Range");
+            EditorGUILayout.LabelField("Change Music Range");
             
             AudioClip chaseClip = chaseMusicClipProp.objectReferenceValue as AudioClip;
             if (chaseClip != null)

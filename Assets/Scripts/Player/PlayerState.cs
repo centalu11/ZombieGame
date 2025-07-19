@@ -20,7 +20,7 @@ namespace ZombieGame.Player
         }
         
         // Track chasing zombies
-        private int chasingZombieCount = 0;
+        private System.Collections.Generic.HashSet<GameObject> chasingZombies = new System.Collections.Generic.HashSet<GameObject>();
         
         /// <summary>
         /// Set the detection state
@@ -33,22 +33,25 @@ namespace ZombieGame.Player
         /// <summary>
         /// Register that a zombie has started chasing
         /// </summary>
-        public void RegisterChasingZombie()
+        public void RegisterChasingZombie(GameObject zombie)
         {
-            chasingZombieCount++;
-            detectionState = DetectionState.BeingChased;
+            if (chasingZombies.Add(zombie)) // Add returns true if item was added (wasn't already present)
+            {
+                detectionState = DetectionState.BeingChased;
+            }
         }
         
         /// <summary>
         /// Unregister that a zombie has stopped chasing
         /// </summary>
-        public void UnregisterChasingZombie()
+        public void UnregisterChasingZombie(GameObject zombie)
         {
-            chasingZombieCount--;
-            if (chasingZombieCount <= 0)
+            if (chasingZombies.Remove(zombie)) // Remove returns true if item was removed (was present)
             {
-                chasingZombieCount = 0;
-                detectionState = DetectionState.Undetected;
+                if (chasingZombies.Count <= 0)
+                {
+                    detectionState = DetectionState.Undetected;
+                }
             }
         }
         

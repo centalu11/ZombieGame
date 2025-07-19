@@ -624,11 +624,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ambienceMusicClip: {fileID: 8300000, guid: 9060138567fcf0942b1a30e823d2c5ab, type: 3}
   ambienceVolume: 0.55
-  ambienceSpeed: 1
   ambienceLoop: 1
   chaseMusicClip: {fileID: 8300000, guid: 0acaa36fbff33e44496704da33727bad, type: 3}
-  chaseVolume: 1
-  chaseSpeed: 1
+  chaseVolume: 0.55
+  chaseFade: 1
+  chaseFadeIn: 3
+  chaseFadeOut: 5
   chaseLoop: 1
   chaseMusicRange:
     startTime: 0.021818183
