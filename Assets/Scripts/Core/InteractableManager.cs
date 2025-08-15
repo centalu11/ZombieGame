@@ -8,6 +8,8 @@ namespace ZombieGame.Core
     [ExecuteInEditMode]
     public class InteractableManager : MonoBehaviour
     {
+        [SerializeField] private bool showDebugInfo = true;
+        
         private void OnEnable()
         {
             EditorSceneManager.sceneOpened += OnSceneOpened;
@@ -63,7 +65,10 @@ namespace ZombieGame.Core
                     if (interactable == null)
                     {
                         interactable = obj.AddComponent<Interactable>();
-                        Debug.Log($"Added Interactable component to tagged object: {obj.name}");
+                        if (showDebugInfo)
+                        {
+                            Debug.Log($"Added Interactable component to tagged object: {obj.name}");
+                        }
                         
                         // Mark the scene as dirty so the change gets saved
                         EditorUtility.SetDirty(obj);
@@ -90,7 +95,10 @@ namespace ZombieGame.Core
                     {
                         interactable = root.AddComponent<Interactable>();
                         interactable.Type = Interactable.InteractableType.Vehicle;
-                        Debug.Log($"Added Vehicle Interactable to root object: {root.name}");
+                        if (showDebugInfo)
+                        {
+                            Debug.Log($"Added Vehicle Interactable to root object: {root.name}");
+                        }
                         
                         // Mark the scene as dirty
                         EditorUtility.SetDirty(root);
@@ -102,7 +110,10 @@ namespace ZombieGame.Core
                     else if (interactable.Type != Interactable.InteractableType.Vehicle)
                     {
                         interactable.Type = Interactable.InteractableType.Vehicle;
-                        Debug.Log($"Updated {root.name}'s Interactable type to Vehicle");
+                        if (showDebugInfo)
+                        {
+                            Debug.Log($"Updated {root.name}'s Interactable type to Vehicle");
+                        }
                         
                         // Mark the scene as dirty
                         EditorUtility.SetDirty(root);

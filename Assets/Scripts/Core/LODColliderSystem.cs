@@ -18,6 +18,7 @@ namespace Core
         
         [Header("Debug")]
         [SerializeField] private bool showDebugGizmos = true;
+        [SerializeField] private bool showDebugInfo = true;
         [SerializeField] private Color collisionRadiusColor = Color.green;
         [SerializeField] private Color triggerRadiusColor = Color.yellow;
         
@@ -99,7 +100,10 @@ namespace Core
             
             isInitialized = true;
             
-            Debug.Log($"LODColliderSystem initialized with {buildingColliders.Count} buildings");
+            if (showDebugInfo)
+            {
+                Debug.Log($"LODColliderSystem initialized with {buildingColliders.Count} buildings");
+            }
         }
         
         private void FindPlayerTransform()
@@ -124,7 +128,10 @@ namespace Core
             if (Camera.main != null)
             {
                 playerTransform = Camera.main.transform;
-                Debug.LogWarning("LODColliderSystem: Player not found, using main camera as reference");
+                if (showDebugInfo)
+                {
+                    Debug.LogWarning("LODColliderSystem: Player not found, using main camera as reference");
+                }
             }
         }
         
@@ -159,7 +166,10 @@ namespace Core
                 }
             }
             
-            Debug.Log($"Cached colliders from {buildingColliders.Count} buildings");
+            if (showDebugInfo)
+            {
+                Debug.Log($"Cached colliders from {buildingColliders.Count} buildings");
+            }
         }
         
         #endregion
@@ -177,7 +187,10 @@ namespace Core
                 // Check if player moved outside the trigger radius
                 if (distanceFromLastUpdate >= updateTriggerRadius)
                 {
-                    Debug.Log($"Player moved {distanceFromLastUpdate:F1}m, updating colliders...");
+                    if (showDebugInfo)
+                    {
+                        Debug.Log($"Player moved {distanceFromLastUpdate:F1}m, updating colliders...");
+                    }
                     
                     // Start collider update
                     yield return StartCoroutine(UpdateCollidersCoroutine(playerTransform.position, false));
@@ -283,7 +296,10 @@ namespace Core
                 $"Initial collider setup: {enabledCount} colliders enabled" :
                 $"Collider update: +{enabledCount} enabled, -{disabledCount} disabled, {activeColliders.Count} total active";
             
-            Debug.Log(logMessage);
+            if (showDebugInfo)
+            {
+                Debug.Log(logMessage);
+            }
         }
         
         #endregion
@@ -356,13 +372,16 @@ namespace Core
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public void LogStats()
         {
-            Debug.Log($"LOD Collider System Stats:\n" +
-                     $"- Total Buildings: {buildingColliders.Count}\n" +
-                     $"- Total Colliders: {GetTotalColliderCount()}\n" +
-                     $"- Active Colliders: {GetActiveColliderCount()}\n" +
-                     $"- Collision Radius: {collisionRadius}m\n" +
-                     $"- Update Trigger Radius: {updateTriggerRadius}m\n" +
-                     $"- Last Update Position: {lastUpdatePosition}");
+            if (showDebugInfo)
+            {
+                Debug.Log($"LOD Collider System Stats:\n" +
+                         $"- Total Buildings: {buildingColliders.Count}\n" +
+                         $"- Total Colliders: {GetTotalColliderCount()}\n" +
+                         $"- Active Colliders: {GetActiveColliderCount()}\n" +
+                         $"- Collision Radius: {collisionRadius}m\n" +
+                         $"- Update Trigger Radius: {updateTriggerRadius}m\n" +
+                         $"- Last Update Position: {lastUpdatePosition}");
+            }
         }
         
         #endregion

@@ -38,7 +38,13 @@ namespace ZombieGame.NPC.Enemy.Zombie.Editor
             
             // Draw animation clips array with custom handling
             Rect clipsRect = new Rect(position.x, currentY, position.width, lineHeight);
-            EditorGUI.LabelField(clipsRect, "Animation Clips");
+            
+            // Create a foldout for the animation clips section
+            bool isExpanded = EditorGUI.Foldout(clipsRect, animationClipsProp.isExpanded, "Animation Clips");
+            if (isExpanded != animationClipsProp.isExpanded)
+            {
+                animationClipsProp.isExpanded = isExpanded;
+            }
             currentY += lineHeight + spacing;
             
             // Draw the array with custom element handling
@@ -109,9 +115,9 @@ namespace ZombieGame.NPC.Enemy.Zombie.Editor
             }
             else
             {
-                // Just show the expand/collapse arrow
-                Rect expandRect = new Rect(position.x + 10, currentY, position.width - 10, lineHeight);
-                EditorGUI.PropertyField(expandRect, animationClipsProp, GUIContent.none);
+                // When collapsed, just show the size info
+                Rect sizeInfoRect = new Rect(position.x + 10, currentY, position.width - 10, lineHeight);
+                EditorGUI.LabelField(sizeInfoRect, $"Size: {animationClipsProp.arraySize}");
                 currentY += lineHeight + spacing;
             }
             
@@ -181,9 +187,6 @@ namespace ZombieGame.NPC.Enemy.Zombie.Editor
                             Rect clipNameRect = new Rect(position.x, currentY, position.width, lineHeight);
                             EditorGUI.LabelField(clipNameRect, "Selected Clip", selectedClip.objectReferenceValue.name);
                             currentY += lineHeight + spacing;
-                            
-                            Rect speedInfoRect = new Rect(position.x, currentY, position.width, lineHeight);
-                            EditorGUI.LabelField(speedInfoRect, $"Speed: {selectedAnimSpeed.floatValue:F1}, Movement: {selectedMoveSpeed.floatValue:F1}", EditorStyles.miniLabel);
                         }
                     }
                 }
@@ -228,7 +231,7 @@ namespace ZombieGame.NPC.Enemy.Zombie.Editor
             }
             else
             {
-                // Just the expand/collapse field
+                // Just the size info label when collapsed
                 height += lineHeight + spacing;
             }
             

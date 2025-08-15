@@ -22,7 +22,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
         public float colliderHeight = 1.8f;
         
         [Tooltip("Radius of the capsule collider")]
-        public float colliderRadius = 0.3f;
+        public float colliderRadius = 0.5f;
         
         [Tooltip("Center offset of the collider")]
         public Vector3 colliderCenter = new Vector3(0, 0.9f, 0);
@@ -54,6 +54,9 @@ namespace ZombieGame.NPC.Enemy.Zombie
         [Header("Auto Setup")]
         [Tooltip("Automatically setup physics components on Start")]
         public bool autoSetupOnStart = true;
+        
+        [Header("Debug")]
+        [SerializeField] private bool showDebugInfo = true;
         
         // Components
         private Rigidbody _rigidbody;

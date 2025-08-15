@@ -334,7 +334,9 @@ GameObject:
   - component: {fileID: 3222486854057380706}
   - component: {fileID: 7914203898067810826}
   - component: {fileID: 8075683014467550289}
-  m_Layer: 8
+  - component: {fileID: 8042588676487194891}
+  - component: {fileID: 4585963205539937216}
+  m_Layer: 11
   m_Name: PlayerArmature
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -509,7 +511,7 @@ MonoBehaviour:
   GroundedRadius: 0.28
   GroundLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 1856
   playerCamera: {fileID: 3556460273863347503}
   isGhostMode: 0
 --- !u!114 &212699407595529667
@@ -608,6 +610,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7429a3e1bb60f0e4e93e2ce705be59bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8042588676487194891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4715014961994207436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7b9659e122303c4b887cb671a95202d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hp: 100
+  detectionState: 0
+--- !u!114 &4585963205539937216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4715014961994207436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b69c62654388748b0ab8bee96d04e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chaseMusicClip: {fileID: 0}
+  chaseVolume: 0.55
+  chaseFade: 1
+  chaseFadeIn: 3
+  chaseFadeOut: 5
+  chaseLoop: 1
+  chaseMusicRange:
+    startTime: 0
+    endTime: 1
+    loopStartTimes:
+    - 0.5
 --- !u!1 &7261240733285281989
 GameObject:
   m_ObjectHideFlags: 0
@@ -670,9 +709,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 499ffbc1c096ae246913674e0503bb68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 255
+  _componentIndexCache: 0
   _addedNetworkObject: {fileID: 3038155812390221819}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 3038155812390221819}
 --- !u!114 &3038155812390221819
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -691,7 +730,9 @@ MonoBehaviour:
   <ComponentIndex>k__BackingField: 0
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours: []
+  NetworkBehaviours:
+  - {fileID: 7263813354724538728}
+  - {fileID: 719094306189807152}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
   RuntimeParentNetworkBehaviour: {fileID: 0}
@@ -716,15 +757,15 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
-  <PrefabId>k__BackingField: 65535
+  <PrefabId>k__BackingField: 11
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 15093533687748992607
   <SceneId>k__BackingField: 0
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 0}
-    Scale: {x: 0, y: 0, z: 0}
-    IsValid: 0
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    IsValid: 1
 --- !u!114 &719094306189807152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -737,9 +778,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2836e36774ca1c4bbbee976e17b649c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 255
+  _componentIndexCache: 1
   _addedNetworkObject: {fileID: 3038155812390221819}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 3038155812390221819}
   _componentConfiguration: 0
   _synchronizeParent: 0
   _packing:

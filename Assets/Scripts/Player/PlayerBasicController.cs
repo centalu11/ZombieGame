@@ -60,9 +60,8 @@ namespace ZombieGame.Player
         [Tooltip("The main camera for player mode")]
         [SerializeField] private GameObject playerCamera;
         
-        [Header("Ghost Mode")]
-        [Tooltip("Ghost mode allows player to pass through colliders")]
-        public bool isGhostMode = false;
+        [Header("Debug")]
+        [SerializeField] private bool showDebugInfo = true;
 
         // player
         private float _speed;
@@ -108,26 +107,14 @@ namespace ZombieGame.Player
 
             // Get reference to EyeAnimationHandler
             _eyeAnimationHandler = GetComponentInChildren<EyeAnimationHandler>();
-            
-            // Subscribe to ghost mode toggle event
-            _input.OnGhostModeToggleEvent += ToggleGhostMode;
         }
 
         private void Update()
         {
             _hasAnimator = TryGetComponent(out _animator);
 
-            if (!isGhostMode)
-            {
-                JumpAndGravity();
-                GroundedCheck();
-            }
-            else
-            {
-                // In ghost mode, disable gravity and grounded check
-                _verticalVelocity = 0f;
-                Grounded = true;
-            }
+            JumpAndGravity();
+            GroundedCheck();
             
             Move();
         }
@@ -229,19 +216,9 @@ namespace ZombieGame.Player
 
             Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
 
-            // move the player
-            if (isGhostMode)
-            {
-                // Ghost mode: move directly through Transform (bypasses colliders)
-                transform.position += targetDirection.normalized * (_speed * Time.deltaTime) +
-                                     new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime;
-            }
-            else
-            {
-                // Normal mode: use CharacterController (respects colliders)
-                _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
-                                 new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
-            }
+            // move the player using CharacterController (respects colliders)
+            _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
+                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 
             // update animator if using character
             if (_hasAnimator)
@@ -353,12 +330,6 @@ namespace ZombieGame.Player
                 playerCamera = GameObject.Find("PlayerCamera");
             }
 
-            // Set default ground layer if not set
-            if (GroundLayers == 0)
-            {
-                GroundLayers = 1 << LayerMask.NameToLayer("Default");
-            }
-
 #if UNITY_EDITOR
             // Set default audio clips if they're not assigned
             if (LandingAudioClip == null)
@@ -430,36 +401,9 @@ namespace ZombieGame.Player
             }
         }
 
-        /// <summary>
-        /// Toggle ghost mode on/off
-        /// </summary>
-        private void ToggleGhostMode()
-        {
-            isGhostMode = !isGhostMode;
-            
-            Debug.Log($"Ghost Mode: {(isGhostMode ? "ENABLED" : "DISABLED")} - Press G to toggle");
-            
-            // Disable/enable the character controller collider
-            _controller.enabled = !isGhostMode;
-            
-            // Visual feedback - change player material transparency or add glow effect
-            if (isGhostMode)
-            {
-                Debug.Log("GHOST MODE ACTIVE: You can now pass through walls!");
-            }
-            else
-            {
-                Debug.Log("GHOST MODE DISABLED: Normal collision detection restored.");
-            }
-        }
-
         private void OnDestroy()
         {
-            // Unsubscribe from events to prevent memory leaks
-            if (_input != null)
-            {
-                _input.OnGhostModeToggleEvent -= ToggleGhostMode;
-            }
+            // Cleanup if needed
         }
 
         #region Blinking System

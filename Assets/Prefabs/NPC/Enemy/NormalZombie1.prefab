@@ -187,6 +187,71 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.2738102, y: 0.04886008, z: 0.000000022351742}
     m_Extent: {x: 0.19489695, y: 0.16547251, z: 0.15937948}
   m_DirtyAABB: 0
+--- !u!1 &566266427463489177
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1693245098558973175}
+  - component: {fileID: 7008417176595067175}
+  m_Layer: 0
+  m_Name: Base HumanHeadEyes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1693245098558973175
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 566266427463489177}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.0486, y: 0.1012, z: 0.0001}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 105461900291943460}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+--- !u!114 &7008417176595067175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 566266427463489177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21c599d6989a961409afc0ab5e9174b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nearVisionRange: 15
+  farVisionRange: 30
+  visionAngle: 90
+  farVisionAngle: 45
+  verticalVisionAngle: 20
+  detectionTimeThreshold: 5
+  chaseTimeThreshold: 3
+  targetLostTimer: 11
+  updateInterval: 0.2
+  useFrameUpdates: 1
+  parentObject: {fileID: 2437828361836556949}
+  blockingLayers:
+    serializedVersion: 2
+    m_Bits: 1856
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 14336
+  showDebugInfo: 1
+  showDebugGizmos: 1
+  showVisionCone: 1
+  showDetectionRanges: 1
 --- !u!1 &581230641743875956
 GameObject:
   m_ObjectHideFlags: 0
@@ -812,9 +877,11 @@ GameObject:
   - component: {fileID: 5431805641420510453}
   - component: {fileID: 4015203170959144250}
   - component: {fileID: 8403381787399884780}
-  - component: {fileID: 2039150547495833928}
   - component: {fileID: 8749867767678778574}
-  m_Layer: 0
+  - component: {fileID: 8198981424002182912}
+  - component: {fileID: -4704853066008290431}
+  - component: {fileID: 1639976129443850686}
+  m_Layer: 14
   m_Name: NormalZombie1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -899,122 +966,7 @@ MonoBehaviour:
   updateFrequency: 2
   freezeRotation: 1
   autoSetupOnStart: 1
---- !u!114 &2039150547495833928
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2437828361836556949}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0c98c6a3070d91546a0ecbb8569d8db2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  detectionRange: 10
-  attackRange: 2
-  minAttackDistance: 1
-  useArmSpanForAttackRange: 1
-  armReachBuffer: 0.5
-  staticWandering:
-    wanderPath:
-    - direction: 0
-      distance: 5
-      angle: 45
-    - direction: 1
-      distance: 3
-      angle: 45
-    - direction: 0
-      distance: 3
-      angle: 45
-    stepDelay: 3
-  idleAnimation:
-    stateName: Z_Idle
-    animationClips:
-    - clip: {fileID: 7400000, guid: 03c4685cb71fd214b996ba63b4a6a76a, type: 3}
-      animationSpeed: 1
-      movementSpeed: 0
-    - clip: {fileID: 7400000, guid: f72e7b64dcca12a4e88562420f4c5e8f, type: 3}
-      animationSpeed: 1
-      movementSpeed: 0
-    - clip: {fileID: 7400000, guid: 23ee7f6864c52b243bfb4f2da09bc287, type: 2}
-      animationSpeed: 1
-      movementSpeed: 0
-    randomized: 1
-    selectedClipIndex: 0
-  wanderWalkAnimation:
-    stateName: Z_Wander_Walk
-    animationClips:
-    - clip: {fileID: 7400000, guid: 8cfd048f912e3bc449653aae509e3299, type: 3}
-      animationSpeed: 1.7
-      movementSpeed: 0.23
-    - clip: {fileID: 7400000, guid: a0389bcc17a6335409898ddb374c1570, type: 2}
-      animationSpeed: 1.5
-      movementSpeed: 0.35
-    randomized: 1
-    selectedClipIndex: 0
-  chaseWalkAnimation:
-    stateName: Z_Chase_Walk
-    animationClips:
-    - clip: {fileID: 7400000, guid: e0facad7c797ccb4aa3fe71eb7be843d, type: 3}
-      animationSpeed: 1.5
-      movementSpeed: 0.35
-    - clip: {fileID: 7400000, guid: 37e6af8636979e04086967e3bd667606, type: 2}
-      animationSpeed: 1.5
-      movementSpeed: 0.35
-    randomized: 1
-    selectedClipIndex: 0
-  chaseRunAnimation:
-    stateName: Z_Chase_Run
-    animationClips:
-    - clip: {fileID: 7400000, guid: 0af6d8854256bcb46b44c8daa2b5a31c, type: 3}
-      animationSpeed: 1
-      movementSpeed: 3
-    - clip: {fileID: 7400000, guid: fc9a62f9b1354f342bacfbbe077c503e, type: 2}
-      animationSpeed: 1
-      movementSpeed: 3
-    randomized: 1
-    selectedClipIndex: 0
-  attackAnimation:
-    stateName: Z_Attack
-    animationClips:
-    - clip: {fileID: 7400000, guid: 8bc7156cd87801544811dd0db86c5b15, type: 3}
-      animationSpeed: 1
-      movementSpeed: 0
-    - clip: {fileID: 7400000, guid: bc2476b646cbc224dad190c7aa10c499, type: 3}
-      animationSpeed: 1
-      movementSpeed: 0
-    - clip: {fileID: 7400000, guid: de559bbb071ebfd40ab5af80881e75e8, type: 2}
-      animationSpeed: 1
-      movementSpeed: 0
-    randomized: 1
-    selectedClipIndex: 2
-  deathBackAnimation:
-    stateName: Z_Death_Back
-    animationClips:
-    - clip: {fileID: 7400000, guid: 812aae90a9297f249908057eed4c0879, type: 2}
-      animationSpeed: 1
-      movementSpeed: 0
-    randomized: 0
-    selectedClipIndex: 0
-  deathFrontAnimation:
-    stateName: Z_Death_Front
-    animationClips:
-    - clip: {fileID: 7400000, guid: e44a892308e84194f9f7a5817a6285d7, type: 2}
-      animationSpeed: 1
-      movementSpeed: 0
-    randomized: 0
-    selectedClipIndex: 0
-  useWalkForChasing: 0
-  useFrontFallDeath: 1
-  enableHeadTracking: 1
-  maxHeadRotationHorizontal: 120
-  maxHeadRotationVertical: 80
-  headRotationSpeed: 3
-  enableArmPointing: 1
-  maxArmRotationAngle: 150
-  armRotationSpeed: 2
-  initialState: 1
+  showDebugInfo: 1
 --- !u!195 &8749867767678778574
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1037,6 +989,135 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &8198981424002182912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2437828361836556949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b21dbdf675d174c946a9b8fbb33320, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  idleAnimation:
+    stateName: Z_Idle
+    animationClips:
+    - clip: {fileID: 7400000, guid: 16694a894076f8d409532774c1e8b359, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    - clip: {fileID: 7400000, guid: 82cf765acd801c848a73968e026a3bf0, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    - clip: {fileID: 7400000, guid: 739c04c9bd765984e85e7745507d1466, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    randomized: 1
+    selectedClipIndex: 0
+  wanderWalkAnimation:
+    stateName: Z_Wander_Walk
+    animationClips:
+    - clip: {fileID: 7400000, guid: 5ac2c2dc8b795364e8c946419fbc9668, type: 2}
+      animationSpeed: 1.7
+      movementSpeed: 0.23
+    - clip: {fileID: 7400000, guid: 9e3e3c6cc44eb034280c176fab230aba, type: 2}
+      animationSpeed: 1.5
+      movementSpeed: 0.35
+    randomized: 1
+    selectedClipIndex: 0
+  chaseWalkAnimation:
+    stateName: Z_Chase_Walk
+    animationClips:
+    - clip: {fileID: 7400000, guid: 4c341ae7bfd21a949ab4d8424020ecc6, type: 2}
+      animationSpeed: 1.5
+      movementSpeed: 0.35
+    - clip: {fileID: 7400000, guid: cf55938b14f0862458a3013ab5ce3f36, type: 2}
+      animationSpeed: 1.5
+      movementSpeed: 0.35
+    randomized: 1
+    selectedClipIndex: 0
+  chaseRunAnimation:
+    stateName: Z_Chase_Run
+    animationClips:
+    - clip: {fileID: 7400000, guid: 00d6f83ac0381b3458c656930f90a2f8, type: 2}
+      animationSpeed: 1
+      movementSpeed: 3
+    - clip: {fileID: 7400000, guid: befa3721881e1c748b0c0708bbf43bc7, type: 2}
+      animationSpeed: 1
+      movementSpeed: 3
+    randomized: 1
+    selectedClipIndex: 0
+  attackAnimation:
+    stateName: Z_Attack
+    animationClips:
+    - clip: {fileID: 7400000, guid: 3045a9448fc497643b90ec7f38ff6917, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    randomized: 0
+    selectedClipIndex: 0
+  deathBackAnimation:
+    stateName: Z_Death_Back
+    animationClips:
+    - clip: {fileID: 7400000, guid: d2ebdd68cf6d46d4ebe6258ef40f65ea, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    randomized: 0
+    selectedClipIndex: 0
+  deathFrontAnimation:
+    stateName: Z_Death_Front
+    animationClips:
+    - clip: {fileID: 7400000, guid: 1549e3b7893629d48994a79b5f9b72c3, type: 2}
+      animationSpeed: 1
+      movementSpeed: 0
+    randomized: 0
+    selectedClipIndex: 0
+  useWalkForChasing: 0
+  useFrontFallDeath: 1
+  isWanderingInitially: 1
+  showDebugInfo: 1
+  mainEyes: {fileID: 566266427463489177}
+--- !u!114 &-4704853066008290431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2437828361836556949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 681285751bfd7e84da57f23b64827b99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  staticWandering:
+    wanderPath:
+    - direction: 0
+      distance: 5
+      angle: 45
+    - direction: 1
+      distance: 3
+      angle: 45
+    - direction: 0
+      distance: 3
+      angle: 45
+    stepDelay: 3
+  showDebugInfo: 1
+--- !u!114 &1639976129443850686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2437828361836556949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87e9e0d4ab0b644459a35832e4843bc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chasePersistenceTime: 20
+  maxChaseDistance: 50
+  targetUpdateInterval: 0.2
+  showDebugInfo: 1
 --- !u!1 &2478641266429182634
 GameObject:
   m_ObjectHideFlags: 0
@@ -2489,7 +2570,7 @@ Transform:
   m_GameObject: {fileID: 7434744179402861773}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3149,6 +3230,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4108486752120934886}
+  - {fileID: 1693245098558973175}
   - {fileID: 4606671052603922128}
   - {fileID: 7777047344407915105}
   - {fileID: 585383316104222534}

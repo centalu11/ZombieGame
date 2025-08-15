@@ -384,6 +384,7 @@ namespace ZombieGame.NPC.Enemy.Zombie
         /// </summary>
         private void FindClosestPlayer()
         {
+            return;
             if (PlayerRegistry.Instance == null || PlayerRegistry.Instance.Players.Count == 0)
             {
                 _player = null;

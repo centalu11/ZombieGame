@@ -98,6 +98,9 @@ namespace ZombieGame.NPC.Enemy.Zombie
         [Range(0f, 180f)]
         public float maxArmRotationAngle = 150f;
         
+        [Header("Debug")]
+        [SerializeField] private bool showDebugInfo = true;
+        
         [Tooltip("Arm rotation speed")]
         public float armRotationSpeed = 2f;
         
@@ -1045,7 +1048,10 @@ namespace ZombieGame.NPC.Enemy.Zombie
             
             if (missingCount == 0)
             {
-                Debug.Log($"[ZombieRootAI] {gameObject.name}: All animations are properly assigned!");
+                if (showDebugInfo)
+                {
+                    Debug.Log($"[ZombieRootAI] {gameObject.name}: All animations are properly assigned!");
+                }
             }
             else
             {

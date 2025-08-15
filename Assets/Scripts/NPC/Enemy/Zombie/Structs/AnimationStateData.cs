@@ -228,6 +228,14 @@ namespace ZombieGame.NPC.Enemy.Zombie.Structs
         }
         
         /// <summary>
+        /// Check if this data is null or invalid (for null comparison)
+        /// </summary>
+        public bool IsNull()
+        {
+            return string.IsNullOrEmpty(stateName) || animationClips == null || animationClips.Length == 0;
+        }
+        
+        /// <summary>
         /// Reset the selected clip (useful for testing different random selections)
         /// </summary>
         public void ResetSelection()

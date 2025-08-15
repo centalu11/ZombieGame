@@ -199,6 +199,42 @@ namespace ZombieGame.NPC.Enemy.Zombie
         }
         
         /// <summary>
+        /// Start wandering behavior - called from WanderingState
+        /// </summary>
+        public void StartWanderingBehavior()
+        {
+            StartWandering();
+        }
+        
+        /// <summary>
+        /// Stop wandering behavior - called from WanderingState
+        /// </summary>
+        public void StopWanderingBehavior()
+        {
+            StopWandering();
+        }
+        
+        /// <summary>
+        /// Update wandering behavior continuously - called from WanderingState
+        /// </summary>
+        public void UpdateWanderingBehavior(float movementSpeed)
+        {
+            UpdateWandering(movementSpeed);
+        }
+        
+        /// <summary>
+        /// Main wandering routine - handles all wandering logic
+        /// </summary>
+        public System.Collections.IEnumerator WanderingRoutine(float movementSpeed)
+        {
+            while (true)
+            {
+                UpdateWandering(movementSpeed);
+                yield return null;
+            }
+        }
+
+        /// <summary>
         /// Draw gizmos for wandering path visualization
         /// </summary>
         public void DrawGizmos(Transform zombieTransform, bool isCurrentlyWandering)
