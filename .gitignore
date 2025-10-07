@@ -99,3 +99,16 @@ InitTestScene*.unity*
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
 **/LightingData.asset
+
+# Documentation and planning files (project-specific)
+BetterZombieAI.md
+DEBUG_FEATURES.md
+game_design_document.md
+QUICK_COOP_SETUP.md
+modified_third_party.md
+recommended_assets.md
+story_formatted.md
+Story.txt
+the_last_haven_documentation.md
+unity_learning_roadmap.md
+unity_zombie_survival_prompt.md
